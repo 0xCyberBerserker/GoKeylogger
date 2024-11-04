@@ -1,5 +1,5 @@
-ejecutar esto en segundo plano
-eliminar comentarios
-ofuscar codigo
-ofuscar o encriptar la salida del fichero (llave de cifrado x ejemplo)
+run this in the background
+remove comments
+obfuscate code
+obfuscate or encrypt the file output (e.g., with an encryption key AES-256)
 LEVEL UP process hooking
