@@ -259,6 +259,7 @@ func main() {
 		0,
 	)
 	if hKey == 0 {
+		fmt.Printf("Failed to set hook: %v\n", err) // Imprimimos el error si hKey es 0.
 		return
 	}
 	_r = syscall.Handle(hKey)
