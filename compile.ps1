@@ -44,7 +44,7 @@ try {
 Write-Output "# Compilation and setup complete"
 Write-Output "# Compiling and running stealthy injector process..."
 try {
-    go build -ldflags="-H=windowsgui" -o injector.exe injector.go
+    go build  -o injector.exe injector.go
     Write-Output "Injector compiled successfully."
 } catch {
     Write-Output "Failed to compile injector."
